@@ -18,14 +18,27 @@ if (! defined('ABSPATH')) {
     die('not allowed');
 }
 
-add_filter('the_content', function ($content) {
+//Verifica se o arquivo de tradução está sendo carregado na pasta correta
+function client_customization_load_text_domain()
+{
+    load_plugin_textdomain('client-customization', false, dirname(plugin_basename(__FILE__)) . '/languages');
+}
+add_action('init', 'client_customization_load_text_domain');
+
+function add_message_post($content)
+{
     // Verifica se o conteúdo atual é é diferente de uma página.
     if (!is_page() && is_single()) {
-        $message = '<p><b>This content is created by: ' . get_bloginfo('name') . ' (' . get_bloginfo('url') . ')</b></p>';
+        $site_name = get_bloginfo('name');
+        $site_url =  get_bloginfo('url');
+        $message_translate = __('<p><b>This content is created by: %s (%s)</b></p>', 'client-customization');
+        $message = sprintf($message_translate, $site_name, $site_url);
         // Se for exibe o conteúdo do post e a mensage.
         return $content . $message;
     } else {
         // Se for uma página exibe somente o conteúdo sem a mensagem.
         return $content;
     }
-}, 10);
+};
+
+add_filter('the_content', 'add_message_post', 10);
